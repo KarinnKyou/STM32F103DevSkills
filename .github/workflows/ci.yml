@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  skills:
+    name: Validate skills
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check skill layout and front matter
+        run: python3 .github/scripts/check_skills.py
+
+  build:
+    name: Build examples
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            gcc-arm-none-eabi libnewlib-arm-none-eabi cmake ninja-build
+
+      - name: Assemble vendor drivers
+        # Drivers are not redistributed with this repository. The official
+        # STM32CubeF1 repo keeps the HAL and the CMSIS device headers as
+        # submodules, so fetch those two repositories directly.
+        run: |
+          set -e
+          git clone --depth 1 https://github.com/STMicroelectronics/cmsis_device_f1.git /tmp/cmsis_f1
+          git clone --depth 1 https://github.com/STMicroelectronics/stm32f1xx_hal_driver.git /tmp/hal_f1
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/STMicroelectronics/STM32CubeF1.git /tmp/cube
+          git -C /tmp/cube sparse-checkout set Drivers/CMSIS/Include
+
+          mkdir -p /tmp/drivers/CMSIS/Device/ST/STM32F1xx /tmp/drivers/STM32F1xx_HAL_Driver
+          cp -r /tmp/cmsis_f1/Include  /tmp/drivers/CMSIS/Device/ST/STM32F1xx/Include
+          cp -r /tmp/cmsis_f1/Source   /tmp/drivers/CMSIS/Device/ST/STM32F1xx/Source
+          cp -r /tmp/cube/Drivers/CMSIS/Include /tmp/drivers/CMSIS/Include
+          cp -r /tmp/hal_f1/Inc        /tmp/drivers/STM32F1xx_HAL_Driver/Inc
+          cp -r /tmp/hal_f1/Src        /tmp/drivers/STM32F1xx_HAL_Driver/Src
+
+      - name: Build each example
+        run: |
+          set -e
+          for ex in examples/*/; do
+            echo "=== $ex ==="
+            cp -r /tmp/drivers "$ex/drivers"
+            cmake -S "$ex" -B "$ex/build" -G Ninja \
+              -DCMAKE_C_COMPILER=arm-none-eabi-gcc \
+              -DCMAKE_ASM_COMPILER=arm-none-eabi-gcc \
+              -DCMAKE_SIZE=arm-none-eabi-size
+            cmake --build "$ex/build"
+          done
+
+      - name: Report firmware sizes
+        run: |
+          for elf in examples/*/build/*.elf; do
+            echo "$elf"
+            arm-none-eabi-size "$elf"
+          done

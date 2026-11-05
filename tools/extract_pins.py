@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Extract GPIO pin defines from Wildfire (野火小智) F103 HAL example projects.
+"""Extract GPIO pin defines from Wildfire Xiaozhi F103 HAL example projects.
 
 The example sources are GBK-encoded, so everything is decoded with gb18030.
 Scans: <root>/*/2-???/野火小智STM32F103C8核心板/HAL/User/**/*.{h,c}

@@ -1,12 +1,12 @@
 # port_modules.ps1 — port Wildfire F103 module examples to the CMake skeleton and build them.
 #
-# For each module folder under $DocRoot that has a "野火小智STM32F103C8核心板" HAL project,
+# For each module folder under $DocRoot holding a Wildfire HAL project,
 # assemble a build tree (complete Drivers + that module's User + gcc startup + our template)
 # and run cmake/ninja. Reports a table of results.
 #
 # Usage:
 #   .\port_modules.ps1                       # all modules
-#   .\port_modules.ps1 -Only 蜂鸣器,光敏      # substring filter on folder name
+#   .\port_modules.ps1 -Only buzzer,ldr       # substring filter on folder name
 
 param(
     [string]$DocRoot = 'D:\DSH_Workspace\04_Embedded\f103_doc',
@@ -28,10 +28,10 @@ $size   = "$gccBin\arm-none-eabi-size.exe"
 # Complete vendor Drivers (module examples ship a trimmed Inc/ that misses 22 LL headers)
 $umbrella = Get-ChildItem $DocRoot -Recurse -Directory -ErrorAction SilentlyContinue |
     Where-Object { $_.Name -eq '0-综合测试-HAL' } | Select-Object -First 1
-if (-not $umbrella) { throw '找不到“0-综合测试-HAL”作为完整 Drivers 来源' }
+if (-not $umbrella) { throw 'missing the complete Drivers source (0-综合测试-HAL)' }
 $driversSrc = Join-Path $umbrella.FullName 'Drivers'
 $startupSrc = Join-Path $driversSrc 'CMSIS\Device\ST\STM32F1xx\Source\Templates\gcc\startup_stm32f103xb.s'
-if (-not (Test-Path $startupSrc)) { throw "缺少 gcc 启动文件: $startupSrc" }
+if (-not (Test-Path $startupSrc)) { throw "missing GCC startup file: $startupSrc" }
 
 function Find-HalUser([string]$moduleDir) {
     Get-ChildItem $moduleDir -Recurse -Directory -Filter 'User' -ErrorAction SilentlyContinue |
@@ -53,7 +53,7 @@ foreach ($m in $modules) {
 
     $user = Find-HalUser $m.FullName
     if (-not $user) {
-        $results += [pscustomobject]@{ Module = $short; Status = 'SKIP'; Detail = '无 C8 核心板 HAL 例程'; Text = '' }
+        $results += [pscustomobject]@{ Module = $short; Status = 'SKIP'; Detail = 'no C8 core-board HAL example'; Text = '' }
         continue
     }
 

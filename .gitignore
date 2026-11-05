@@ -1,4 +1,4 @@
-# 构建产物
+# Build output
 build/
 *.elf
 *.bin
@@ -7,15 +7,15 @@ build/
 *.o
 *.d
 
-# 厂商驱动（按 README 自行从 f103_doc 复制）
+# Vendor drivers (copy them from the ST documentation tree, see README)
 drivers/
 
-# 编译数据库与编辑器
+# Compilation database and editors
 compile_commands.json
 .vscode/
 .idea/
 
-# 抓包与日志
+# Logs and captures
 *.log
 boot_log.txt
 __pycache__/

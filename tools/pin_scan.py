@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Permissive GPIO macro scan for one Wildfire F103 example directory.
 
-Unlike extract_pins.py, this walks any path containing 核心板 and prints every
+Unlike extract_pins.py, this walks any path containing the core-board marker and prints every
 GPIO/ADC/TIM/SPI/I2C macro it finds in bsp_*.h and main.c. Sources are GBK.
 """
 import os
