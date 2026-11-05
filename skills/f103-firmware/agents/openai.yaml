@@ -1,0 +1,6 @@
+interface:
+  display_name: "STM32F103 固件"
+  short_description: "编写 F103 的 HAL1 应用代码与外设驱动"
+  default_prompt: "使用 $f103-firmware 在现有 STM32F103 工程中实现所需外设功能，并按实际引脚分配核对冲突。"
+policy:
+  allow_implicit_invocation: true
